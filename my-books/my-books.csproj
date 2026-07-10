@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>my_books</RootNamespace>
+    <UserSecretsId>118af443-6011-4704-8970-f5571f4f5f55</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
