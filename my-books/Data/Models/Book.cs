@@ -1,4 +1,6 @@
-﻿namespace my_books.Data.Models
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+
+namespace my_books.Data.Models
 {
     public class Book
     {
@@ -9,9 +11,15 @@
         public DateOnly? DateRead { get; set; }
         public int? Rate { get; set; }
         public String Genre { get; set; }
-        public String Author { get; set; }
         public string CoverUrl { get; set; }
         public DateOnly? DateAdded { get; set; }
+
+        //Navigation Properties
+        public int PublisherId { get; set; }
+
+        public Publisher Publisher { get; set; }
+
+        public List<Book_Author> Book_Authors { get; set; }
 
     }
 }
