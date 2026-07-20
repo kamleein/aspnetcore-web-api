@@ -1,9 +1,14 @@
 using Asp.Versioning;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using my_books.Data;
 using my_books.Data.Services;
 using my_books.Exceptions;
+using ApplicationUser = my_books.Data.Models.ApplicationUser;
 using Serilog;
+using System.Text;
 using System.Text.Json.Serialization;
 
 try
@@ -37,6 +42,47 @@ try
         //config.ApiVersionReader = new MediaTypeApiVersionReader();
     })
         .AddMvc();
+
+    //Token Validation Parameters
+    var tokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration["JWT:Secret"])),
+
+        ValidateIssuer = true,
+        ValidIssuer = configuration["JWT:Issuer"],
+
+        ValidateAudience = true,
+        ValidAudience = configuration["JWT:Audience"],
+
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+
+    };
+
+    builder.Services.AddSingleton(tokenValidationParameters);
+
+    //Add Identity
+    builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+        .AddEntityFrameworkStores<AppDbContext>()
+        .AddDefaultTokenProviders();
+
+    //Add Authentication
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+
+    //Add JWT Bearer
+    .AddJwtBearer(options =>
+    {
+        options.SaveToken = true;
+        options.RequireHttpsMetadata = false;
+        options.TokenValidationParameters = tokenValidationParameters;
+    });
+
     builder.Services.AddSwaggerGen();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
@@ -64,6 +110,8 @@ try
 
     app.UseHttpsRedirection();
 
+    //Authentication & Authorization
+    app.UseAuthentication();
     app.UseAuthorization();
 
     //Exception Handling
@@ -71,6 +119,8 @@ try
     //app.ConfigureCustomExceptionHandler();
 
     app.MapControllers();
+
+    AppDbInitialiser.SeedRoles(app).Wait();
 
     app.Run();
 }

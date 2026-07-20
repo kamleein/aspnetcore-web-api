@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="my-books-tests/my-books-tests.csproj" Id="c8aaeb55-5c8a-443c-bb54-a244fe9650fd" />
   <Project Path="my-books/my-books.csproj" />
 </Solution>
